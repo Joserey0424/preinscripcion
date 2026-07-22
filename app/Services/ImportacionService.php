@@ -9,6 +9,7 @@ use App\Models\Importacion;
 use App\Models\Asignacion;
 use App\Models\Fecha;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
 
 class ImportacionService
@@ -190,7 +191,6 @@ class ImportacionService
             'registros' => $registros
 
         ];
-
     }
 
     public function importar()
@@ -201,14 +201,26 @@ class ImportacionService
             throw new \Exception('No existe una importación pendiente.');
         }
 
+
         DB::transaction(function () use ($preview) {
 
+            $nombreLider = preg_replace(
+                '/\s+/',
+                ' ',
+                trim($preview['lider']['nombre'])
+            );
+
+            $nombreLider = Str::title(
+                Str::lower($nombreLider)
+            );
+            
             $importacion = Importacion::create([
 
                 'archivo_original'      => 'Pendiente',
                 'archivo_guardado'      => 'Pendiente',
 
-                'lider_nombre'          => $preview['lider']['nombre'],
+
+                'lider_nombre'          => $nombreLider,
                 'lider_documento'       => $preview['lider']['identificacion'],
 
                 'cantidad_registros'    => count($preview['registros']),

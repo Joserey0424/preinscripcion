@@ -1,239 +1,258 @@
 @extends('layouts.app')
 
 @section('content')
+    <div class="d-flex justify-content-between align-items-center mb-4">
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
 
-    <div>
+            <h2 class="fw-bold mb-0">
 
-        <h2 class="fw-bold mb-0">
+                Historial de Importaciones
 
-            Historial de Importaciones
+            </h2>
 
-        </h2>
+            <small class="text-muted">
 
-        <small class="text-muted">
+                Administra las cargas realizadas.
 
-            Administra las cargas realizadas.
+            </small>
 
-        </small>
+        </div>
 
     </div>
 
-</div>
+    <div class="row">
 
-<div class="row">
+        <div class="row mb-4">
 
-@forelse($importaciones as $importacion)
+            <div class="col-md-5">
 
-<div class="col-lg-4 mb-4">
+                <form>
 
-    <div class="card border-0 shadow-lg h-100">
+                    <div class="input-group">
 
-        <div class="card-body">
+                        <span class="input-group-text">
 
-            <div class="d-flex justify-content-between">
+                            <i class="bi bi-search"></i>
 
-                <span class="badge bg-primary">
+                        </span>
 
-                    #{{ $importacion->id }}
+                        <input type="text" class="form-control" name="buscar"
+                            placeholder="Buscar por líder, documento o archivo..." value="{{ $buscar }}">
 
-                </span>
+                    </div>
 
-                @if($importacion->estado=='REVERTIDA')
-
-                    <span class="badge bg-danger">
-
-                        Eliminada
-
-                    </span>
-
-                @else
-
-                    <span class="badge bg-success">
-
-                        Activa
-
-                    </span>
-
-                @endif
-
-            </div>
-
-            <h5 class="mt-3">
-
-                {{ $importacion->archivo_original }}
-
-            </h5>
-
-            <hr>
-
-            <p class="mb-1">
-
-                <strong>Líder:</strong>
-
-                {{ $importacion->lider_nombre }}
-
-            </p>
-
-            <p class="mb-1">
-
-                <strong>Documento:</strong>
-
-                {{ $importacion->lider_documento }}
-
-            </p>
-
-            <p class="mb-1">
-
-                <strong>Fecha:</strong>
-
-                {{ $importacion->created_at->format('d/m/Y h:i A') }}
-
-            </p>
-
-            <hr>
-
-            <div class="row text-center">
-
-                <div class="col">
-
-                    <h4 class="text-success">
-
-                        {{ $importacion->cantidad_importados }}
-
-                    </h4>
-
-                    <small>
-
-                        Correctos
-
-                    </small>
-
-                </div>
-
-                <div class="col">
-
-                    <h4 class="text-danger">
-
-                        {{ $importacion->cantidad_conflictos }}
-
-                    </h4>
-
-                    <small>
-
-                        Incorrectos
-
-                    </small>
-
-                </div>
+                </form>
 
             </div>
 
         </div>
 
-        @if($importacion->estado!='REVERTIDA')
+        @forelse($importaciones as $importacion)
+            <div class="col-lg-4 mb-4">
 
-        <div class="card-footer bg-white border-0">
+                <div class="card border-0 shadow-lg h-100">
 
-            <button
+                    <div class="card-body">
 
-                class="btn btn-outline-danger w-100 eliminar"
+                        <div class="d-flex justify-content-between">
 
-                data-id="{{ $importacion->id }}">
+                            <span class="badge bg-primary">
 
-                <i class="bi bi-trash"></i>
+                                #{{ $importacion->id }}
 
-                Eliminar importación
+                            </span>
 
-            </button>
+                            @if ($importacion->estado == 'REVERTIDA')
+                                <span class="badge bg-danger">
 
-        </div>
+                                    Eliminada
 
-        @endif
+                                </span>
+                            @else
+                                <span class="badge bg-success">
+
+                                    Activa
+
+                                </span>
+                            @endif
+
+                        </div>
+
+                        <h5 class="mt-3">
+
+                            {{ $importacion->archivo_original }}
+
+                        </h5>
+
+                        <hr>
+
+                        <p class="mb-1">
+
+                            <strong>Líder:</strong>
+
+                            {{ $importacion->lider_nombre }}
+
+                        </p>
+
+                        <p class="mb-1">
+
+                            <strong>Documento:</strong>
+
+                            {{ $importacion->lider_documento }}
+
+                        </p>
+
+                        <p class="mb-1">
+
+                            <strong>Fecha:</strong>
+
+                            {{ $importacion->created_at->format('d/m/Y h:i A') }}
+
+                        </p>
+
+                        <hr>
+
+                        <div class="row text-center">
+
+                            <div class="col">
+
+                                <h4 class="text-success">
+
+                                    {{ $importacion->cantidad_importados }}
+
+                                </h4>
+
+                                <small>
+
+                                    Correctos
+
+                                </small>
+
+                            </div>
+
+                            <div class="col">
+
+                                <h4 class="text-danger">
+
+                                    {{ $importacion->cantidad_conflictos }}
+
+                                </h4>
+
+                                <small>
+
+                                    Incorrectos
+
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    @if ($importacion->estado != 'REVERTIDA')
+                        <div class="card-footer bg-white border-0">
+
+                            <button class="btn btn-outline-danger w-100 eliminar" data-id="{{ $importacion->id }}">
+
+                                <i class="bi bi-trash"></i>
+
+                                Eliminar importación
+
+                            </button>
+
+                        </div>
+                    @endif
+
+                </div>
+
+            </div>
+
+        @empty
+
+            <div class="col-12">
+
+                <div class="alert alert-info">
+
+                    No existen importaciones.
+
+                </div>
+
+            </div>
+        @endforelse
 
     </div>
 
-</div>
+    <div class="mt-3">
 
-@empty
-
-<div class="col-12">
-
-    <div class="alert alert-info">
-
-        No existen importaciones.
+        {{ $importaciones->links() }}
 
     </div>
-
-</div>
-
-@endforelse
-
-</div>
-
-<div class="mt-3">
-
-{{ $importaciones->links() }}
-
-</div>
-
 @endsection
 
-@push('scripts')
+@if ($importaciones->hasPages())
+    <div class="d-flex justify-content-center mt-5">
+
+        {{ $importaciones->links() }}
+
+    </div>
+@endif
 
 @push('scripts')
-<script>
 
-const token = document
-    .querySelector('meta[name="csrf-token"]')
-    .content;
+    @push('scripts')
+        <script>
+            const token = document
+                .querySelector('meta[name="csrf-token"]')
+                .content;
 
-document.querySelectorAll(".eliminar").forEach(btn => {
+            document.querySelectorAll(".eliminar").forEach(btn => {
 
-    btn.addEventListener("click", async function () {
+                btn.addEventListener("click", async function() {
 
-        if (!confirm("¿Desea eliminar esta importación?\n\nTodas las asignaciones asociadas quedarán desactivadas.")) {
+                    if (!confirm(
+                            "¿Desea eliminar esta importación?\n\nTodas las asignaciones asociadas quedarán desactivadas."
+                        )) {
 
-            return;
+                        return;
 
-        }
+                    }
 
-        const response = await fetch(
+                    const response = await fetch(
 
-            "/importaciones/" + this.dataset.id,
+                        "/importaciones/" + this.dataset.id,
 
-            {
+                        {
 
-                method: "DELETE",
+                            method: "DELETE",
 
-                headers: {
+                            headers: {
 
-                    "X-CSRF-TOKEN": token,
+                                "X-CSRF-TOKEN": token,
 
-                    "Accept": "application/json"
+                                "Accept": "application/json"
 
-                }
+                            }
 
-            }
+                        }
 
-        );
+                    );
 
-        const data = await response.json();
+                    const data = await response.json();
 
-        if (data.success) {
+                    if (data.success) {
 
-            location.reload();
+                        location.reload();
 
-        } else {
+                    } else {
 
-            alert("No fue posible eliminar la importación.");
+                        alert("No fue posible eliminar la importación.");
 
-        }
+                    }
 
-    });
+                });
 
-});
-
-</script>
-@endpush
+            });
+        </script>
+    @endpush

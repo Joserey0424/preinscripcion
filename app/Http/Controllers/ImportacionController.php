@@ -26,19 +26,28 @@ class ImportacionController extends Controller
         return view('importaciones.index');
     }
 
-    public function historial()
+    public function historial(Request $request)
     {
-        $importaciones = Importacion::withCount([
-            'asignaciones as importadas' => function ($q) {
-                $q->where('activo', true);
-            }
-        ])
+        $buscar = $request->buscar;
+
+        $importaciones = Importacion::query()
+
+            ->when($buscar, function ($q) use ($buscar) {
+
+                $q->where('lider_nombre', 'like', "%{$buscar}%")
+                    ->orWhere('lider_documento', 'like', "%{$buscar}%")
+                    ->orWhere('archivo_original', 'like', "%{$buscar}%");
+            })
+
             ->latest()
-            ->paginate(12);
+
+            ->paginate(9)
+
+            ->withQueryString();
 
         return view(
             'importaciones.historial',
-            compact('importaciones')
+            compact('importaciones', 'buscar')
         );
     }
 
