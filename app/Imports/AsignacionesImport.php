@@ -4,6 +4,7 @@ namespace App\Imports;
 
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
+use Illuminate\Support\Str;
 
 class AsignacionesImport implements ToCollection
 {
@@ -11,12 +12,13 @@ class AsignacionesImport implements ToCollection
 
     public function collection(Collection $rows)
     {
-    
-    //  * Leer colaboradores desde la fila 7 del Excel */
+
+        //  * Leer colaboradores desde la fila 7 del Excel */
         foreach ($rows->slice(6) as $index => $row) {
 
             // Solo columnas A, B y C
-            $nombre = trim((string) ($row[0] ?? ''));
+            $nombre = preg_replace('/\s+/', ' ', trim((string) ($row[0] ?? '')));
+            $nombre = Str::title(Str::lower($nombre));
             $documento = trim((string) ($row[1] ?? ''));
             $fecha = trim((string) ($row[2] ?? ''));
 
@@ -49,6 +51,5 @@ class AsignacionesImport implements ToCollection
                 'fecha'      => $fecha,
             ];
         }
-
     }
 }

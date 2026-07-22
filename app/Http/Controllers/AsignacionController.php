@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Asignacion;
 use App\Models\Fecha;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class AsignacionController extends Controller
 {
@@ -17,13 +18,12 @@ class AsignacionController extends Controller
             'fecha',
             'importacion'
         ])
-        ->where('activo', true);
+            ->where('activo', true);
 
         // Filtro inicial por fecha (cuando carga la página)
         if ($request->filled('fecha')) {
 
             $query->where('fecha_id', $request->fecha);
-
         }
 
         $asignaciones = $query
@@ -52,23 +52,20 @@ class AsignacionController extends Controller
             'fecha',
             'importacion'
         ])
-        ->where('activo', true);
+            ->where('activo', true);
 
         if (!empty($texto)) {
 
             $query->where(function ($q) use ($texto) {
 
                 $q->where('nombre', 'like', "%{$texto}%")
-                  ->orWhere('documento', 'like', "%{$texto}%");
-
+                    ->orWhere('documento', 'like', "%{$texto}%");
             });
-
         }
 
         if (!empty($fecha)) {
 
             $query->where('fecha_id', $fecha);
-
         }
 
         return response()->json(
@@ -114,12 +111,15 @@ class AsignacionController extends Controller
                 'message' => 'Ya existe una asignación activa para este documento.'
 
             ], 422);
-
         }
+
+    
+        $nombre = preg_replace('/\s+/', ' ', trim($request->nombre));
+        $nombre = Str::title(Str::lower($nombre));
 
         $asignacion->update([
 
-            'nombre' => trim($request->nombre),
+            'nombre' => $nombre,
 
             'documento' => trim($request->documento),
 
