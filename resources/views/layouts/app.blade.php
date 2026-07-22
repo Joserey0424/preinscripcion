@@ -144,7 +144,12 @@ Asignaciones
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-<script src="{{ asset('js/asignaciones.js') }}"></script>
+<script>
+    console.log("{{ asset('js/asignaciones.js') }}");
+    console.log("{{ secure_asset('js/asignaciones.js') }}");
+</script>
+
+<script src="{{ secure_asset('js/asignaciones.js') }}"></script>
 
 </body>
 
