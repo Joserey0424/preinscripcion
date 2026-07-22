@@ -150,6 +150,7 @@ Asignaciones
 </script>
 
 <script src="{{ secure_asset('js/asignaciones.js') }}"></script>
+@stack('scripts')
 
 </body>
 

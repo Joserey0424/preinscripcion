@@ -6,13 +6,16 @@ use App\Http\Controllers\ImportacionController;
 use App\Http\Controllers\FechaController;
 use App\Http\Controllers\AsignacionController;
 
+
 Route::get('/', [DashboardController::class, 'index'])
     ->name('dashboard');
 
 Route::resource('fechas', FechaController::class);
 
-Route::get('/importaciones', [ImportacionController::class, 'index'])
-    ->name('importaciones.index');
+Route::get(
+    '/importaciones',
+    [ImportacionController::class, 'index']
+)->name('importaciones.index');
 
 Route::post('/importaciones/preview', [ImportacionController::class, 'preview'])
     ->name('importaciones.preview');
@@ -36,7 +39,7 @@ Route::patch(
 
 Route::post(
     '/importaciones/importar',
-    [ImportacionController::class,'importar']
+    [ImportacionController::class, 'importar']
 )->name('importaciones.importar');
 
 Route::get(
@@ -55,3 +58,13 @@ Route::put('/asignaciones/{asignacion}', [AsignacionController::class, 'update']
 
 Route::delete('/asignaciones/{asignacion}', [AsignacionController::class, 'destroy'])
     ->name('asignaciones.destroy');
+
+Route::get(
+    '/historial',
+    [ImportacionController::class, 'historial']
+)->name('importaciones.historial');
+
+Route::delete(
+    '/importaciones/{importacion}',
+    [ImportacionController::class, 'destroy']
+)->name('importaciones.destroy');
