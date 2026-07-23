@@ -68,3 +68,10 @@ Route::delete(
     '/importaciones/{importacion}',
     [ImportacionController::class, 'destroy']
 )->name('importaciones.destroy');
+
+
+
+Route::get(
+    '/exportar/consolidado',
+    [DashboardController::class, 'exportarConsolidado']
+)->name('exportar.consolidado');

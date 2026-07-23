@@ -2,15 +2,20 @@
 
 @section('content')
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
 
-    <h3 class="mb-0">
+    <div>
+        <h2 class="mb-1">Dashboard</h2>
+        <p class="text-muted mb-0">
+            Resumen general del sistema de reinducción.
+        </p>
+    </div>
 
-        <i class="bi bi-people-fill"></i>
-
-        Asignaciones
-
-    </h3>
+    <a href="{{ route('exportar.consolidado') }}"
+       class="btn btn-success">
+        <i class="bi bi-file-earmark-excel me-2"></i>
+        Exportar consolidado
+    </a>
 
 </div>
 

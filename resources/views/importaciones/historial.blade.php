@@ -184,20 +184,21 @@
 
     </div>
 
-    <div class="mt-3">
+    {{-- <div class="mt-3">
 
         {{ $importaciones->links() }}
 
-    </div>
+    </div> --}}
+
+    @if ($importaciones->hasPages())
+        <div class="d-flex justify-content-center mt-5">
+
+            {{ $importaciones->links() }}
+
+        </div>
+    @endif
 @endsection
 
-@if ($importaciones->hasPages())
-    <div class="d-flex justify-content-center mt-5">
-
-        {{ $importaciones->links() }}
-
-    </div>
-@endif
 
 @push('scripts')
 

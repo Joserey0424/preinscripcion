@@ -59,39 +59,43 @@
 
         <div class="col-lg-4">
 
-            <div class="card border-0 shadow-lg h-100">
+            <a href="{{ route('asignaciones.index') }}" class="text-decoration-none text-dark">
 
-                <div class="card-body d-flex align-items-center">
+                <div class="card border-0 shadow-lg h-100">
+                    <div class="card-body d-flex align-items-center">
 
-                    <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3">
+                        <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3">
 
-                        <i class="bi bi-people-fill text-success fs-2"></i>
-
-                    </div>
-
-                    <div>
-
-                        <div class="text-muted">
-
-                            Colaboradores asignados
+                            <i class="bi bi-people-fill text-success fs-2"></i>
 
                         </div>
 
-                        <h2 class="fw-bold mb-0">
+                        <div>
 
-                            {{ $totalAsignaciones }}
+                            <div class="text-muted">
 
-                        </h2>
+                                Colaboradores asignados
+
+                            </div>
+
+                            <h2 class="fw-bold mb-0">
+
+                                {{ $totalAsignaciones }}
+
+                            </h2>
+
+                        </div>
 
                     </div>
 
                 </div>
-
-            </div>
+            </a>
 
         </div>
 
         <div class="col-lg-4">
+
+            {{-- <a href="{{ route('fechas.index') }}" class="text-decoration-none text-dark"> --}}
 
             <div class="card border-0 shadow-lg h-100">
 
@@ -122,7 +126,7 @@
                 </div>
 
             </div>
-
+            {{-- </a> --}}
         </div>
 
     </div>
@@ -217,4 +221,6 @@
         </div>
 
     </div>
+
+    
 @endsection
