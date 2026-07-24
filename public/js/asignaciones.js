@@ -82,6 +82,8 @@ async function buscarAsignaciones() {
 
                 <td>${a.fecha.descripcion}</td>
 
+                 <td>${a.importacion.lider_nombre}</td>
+
                 <td>
         `;
 
@@ -102,7 +104,9 @@ async function buscarAsignaciones() {
 
                     data-documento="${a.documento}"
 
-                    data-fecha="${a.fecha_id}">
+                    data-fecha="${a.fecha_id}"
+
+                    data-importacion="${a.importacion.lider_nombre}">
 
                     <i class="bi bi-pencil"></i>
 
