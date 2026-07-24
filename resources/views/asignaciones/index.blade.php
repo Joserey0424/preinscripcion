@@ -113,6 +113,12 @@
 
                     </th>
 
+                    <th>
+
+                        Lider
+
+                    </th>
+
                     {{-- <th width="120">
 
                         Estado
@@ -128,6 +134,7 @@
             </thead>
 
             <tbody id="tablaAsignaciones">
+                {{-- {{ dd($asignaciones); } --}}
 
                 @forelse($asignaciones as $asignacion)
 
@@ -150,6 +157,13 @@
                             {{ $asignacion->fecha->descripcion }}
 
                         </td>
+
+                        <td>
+
+                            {{ $asignacion->importacion->lider_nombre }}
+
+                        </td>
+                        
 
                         {{-- <td>
 
