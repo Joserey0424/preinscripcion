@@ -79,11 +79,11 @@
 
                         </div>
 
-                        <h5 class="mt-3">
+                        {{-- <h5 class="mt-3">
 
                             {{ $importacion->archivo_original }}
 
-                        </h5>
+                        </h5> --}}
 
                         <hr>
 
