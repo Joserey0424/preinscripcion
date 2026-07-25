@@ -68,6 +68,7 @@ async function buscarAsignaciones() {
     );
 
     const datos = await response.json();
+    console.log(datos[0]);
 
     let html = "";
 

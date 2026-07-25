@@ -213,4 +213,9 @@
 
 @include('asignaciones.modalEditar')
 
+@push('scripts')
+<script src="{{ secure_asset('js/asignaciones.js') }}"></script>
+{{-- <script src="/js/asignaciones.js"></script> --}}
+@endpush
+
 @endsection

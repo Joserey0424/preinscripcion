@@ -200,60 +200,59 @@
 @endsection
 
 
+
 @push('scripts')
+    <script>
+        const token = document
+            .querySelector('meta[name="csrf-token"]')
+            .content;
 
-    @push('scripts')
-        <script>
-            const token = document
-                .querySelector('meta[name="csrf-token"]')
-                .content;
+        document.querySelectorAll(".eliminar").forEach(btn => {
 
-            document.querySelectorAll(".eliminar").forEach(btn => {
+            btn.addEventListener("click", async function() {
 
-                btn.addEventListener("click", async function() {
+                if (!confirm(
+                        "¿Desea eliminar esta importación?\n\nTodas las asignaciones asociadas quedarán desactivadas."
+                    )) {
 
-                    if (!confirm(
-                            "¿Desea eliminar esta importación?\n\nTodas las asignaciones asociadas quedarán desactivadas."
-                        )) {
+                    return;
 
-                        return;
+                }
 
-                    }
+                const response = await fetch(
 
-                    const response = await fetch(
+                    "/importaciones/" + this.dataset.id,
 
-                        "/importaciones/" + this.dataset.id,
+                    {
 
-                        {
+                        method: "DELETE",
 
-                            method: "DELETE",
+                        headers: {
 
-                            headers: {
+                            "X-CSRF-TOKEN": token,
 
-                                "X-CSRF-TOKEN": token,
-
-                                "Accept": "application/json"
-
-                            }
+                            "Accept": "application/json"
 
                         }
 
-                    );
-
-                    const data = await response.json();
-
-                    if (data.success) {
-
-                        location.reload();
-
-                    } else {
-
-                        alert("No fue posible eliminar la importación.");
-
                     }
 
-                });
+                );
+
+                const data = await response.json();
+
+                if (data.success) {
+
+                    location.reload();
+
+                } else {
+
+                    alert("No fue posible eliminar la importación.");
+
+                }
 
             });
-        </script>
-    @endpush
+
+        });
+    </script>
+@endpush

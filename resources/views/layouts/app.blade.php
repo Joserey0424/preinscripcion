@@ -149,7 +149,8 @@ Asignaciones
     console.log("{{ secure_asset('js/asignaciones.js') }}");
 </script>
 
-<script src="{{ secure_asset('js/asignaciones.js') }}"></script>
+{{-- <script src="{{ secure_asset('js/asignaciones.js') }}"></script>
+<script src="/js/asignaciones.js"></script> --}}
 @stack('scripts')
 
 </body>
