@@ -68,7 +68,9 @@ class FechaSheetExport implements FromCollection, WithHeadings, ShouldAutoSize, 
 
                     'Fecha' => $this->fecha->descripcion,
 
-                    'Líder' => $a->importacion->lider_nombre,
+                    'Documento líder' => $a->importacion->lider_documento,
+
+                    'Nombre Líder' => $a->importacion->lider_nombre,
 
                     'Fecha importación' =>
                     $a->importacion->created_at
@@ -88,7 +90,9 @@ class FechaSheetExport implements FromCollection, WithHeadings, ShouldAutoSize, 
 
             'Fecha',
 
-            'Líder',
+            'Documento lider',
+
+            'Nombre Líder',
 
             'Fecha importación'
 
