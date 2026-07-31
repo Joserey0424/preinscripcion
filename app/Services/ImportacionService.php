@@ -256,16 +256,20 @@ class ImportacionService
         ];
     }
 
-    
+
     public function importar()
     {
         $preview = session('preview_importacion');
+        // dd(session()->all());
 
         if (!$preview) {
             throw new \Exception('No existe una importación pendiente.');
         }
 
-        DB::transaction(function () use ($preview) {
+        $resultados = [];
+        $nombreLider = '';
+
+        DB::transaction(function () use ($preview, &$resultados, &$nombreLider) {
 
             $nombreLider = Str::title(
                 Str::lower(
@@ -281,46 +285,67 @@ class ImportacionService
                 'asignaciones as ocupados' => function ($q) {
                     $q->where('activo', true);
                 }
-            ])->get()->keyBy('id');
-
-            $resultados = [];
+            ])
+                ->get()
+                ->keyBy('id');
 
             $importacion = Importacion::create([
-                'archivo_original'    => 'Pendiente',
-                'archivo_guardado'    => 'Pendiente',
-                'lider_nombre'        => $nombreLider,
-                'lider_documento'     => $preview['lider']['identificacion'],
-                'cantidad_registros'  => count($preview['registros']),
-                'cantidad_importados' => 0,
-                'cantidad_conflictos' => 0,
-                'estado'              => 'FINALIZADA',
-                'observaciones'       => 'Importación realizada desde vista previa.'
+                'archivo_original'      => 'Pendiente',
+                'archivo_guardado'      => 'Pendiente',
+                'lider_nombre'          => $nombreLider,
+                'lider_documento'       => $preview['lider']['identificacion'],
+                'cantidad_registros'    => count($preview['registros']),
+                'cantidad_importados'   => 0,
+                'cantidad_conflictos'   => 0,
+                'estado'                => 'FINALIZADA',
+                'observaciones'         => 'Importación realizada desde vista previa.'
             ]);
 
             foreach ($preview['registros'] as $fila) {
 
+                /*
+            |--------------------------------------------------------------------------
+            | La fila ya venía con errores desde la vista previa
+            |--------------------------------------------------------------------------
+            */
+
                 if (!$fila['importar']) {
+
                     $resultados[] = [
                         'ok' => false,
                         'documento' => $fila['documento'],
                         'nombre' => $fila['nombre'],
                         'motivo' => implode(', ', $fila['errores'] ?? [])
                     ];
+
                     continue;
                 }
+
+                /*
+            |--------------------------------------------------------------------------
+            | Buscar fecha
+            |--------------------------------------------------------------------------
+            */
 
                 $fecha = $fechas[trim($fila['fecha'])] ?? null;
 
                 if (!$fecha) {
+
                     $resultados[] = [
                         'ok' => false,
                         'documento' => $fila['documento'],
                         'nombre' => $fila['nombre'],
                         'motivo' => 'La fecha no existe.'
                     ];
+
                     continue;
                 }
 
+                /*
+            |--------------------------------------------------------------------------
+            | Validación final de cupos
+            |--------------------------------------------------------------------------
+            */
 
                 if ($ocupacion[$fecha->id]->ocupados >= $fecha->cupo_maximo) {
 
@@ -328,11 +353,17 @@ class ImportacionService
                         'ok' => false,
                         'documento' => $fila['documento'],
                         'nombre' => $fila['nombre'],
-                        'motivo' => 'No hay cupos disponibles para la sesión.'
+                        'motivo' => 'La sesión ya no tiene cupos disponibles.'
                     ];
 
                     continue;
                 }
+
+                /*
+            |--------------------------------------------------------------------------
+            | Crear asignación
+            |--------------------------------------------------------------------------
+            */
 
                 Asignacion::create([
                     'importacion_id' => $importacion->id,
@@ -355,14 +386,34 @@ class ImportacionService
             }
 
             $importacion->update([
-                'cantidad_importados' => collect($resultados)->where('ok', true)->count(),
-                'cantidad_conflictos' => collect($resultados)->where('ok', false)->count(),
-            ]);
 
-            session([
-                'resultado_importacion' => $resultados
+                'cantidad_importados' => collect($resultados)
+                    ->where('ok', true)
+                    ->count(),
+
+                'cantidad_conflictos' => collect($resultados)
+                    ->where('ok', false)
+                    ->count(),
+
             ]);
         });
+
+        /*
+    |--------------------------------------------------------------------------
+    | Errores para el correo
+    |--------------------------------------------------------------------------
+    */
+
+        $errores = collect($resultados)
+            ->where('ok', false)
+            ->values()
+            ->toArray();
+
+        return [
+            'lider' => $nombreLider,
+            'errores' => $errores,
+            'resultados' => $resultados
+        ];
 
         session()->forget('preview_importacion');
     }

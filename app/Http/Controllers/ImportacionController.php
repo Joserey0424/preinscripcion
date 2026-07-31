@@ -64,6 +64,8 @@ class ImportacionController extends Controller
             'preview_importacion' => $resultado
         ]);
 
+        // dd(session()->all());
+
         return view(
             'importaciones.preview',
             compact('resultado')
@@ -73,13 +75,13 @@ class ImportacionController extends Controller
     /**
      * Confirmar importación
      */
-    public function importar(Request $request)
+    public function importar()
     {
-        $this->service->importar($request);
+        $resultado = $this->service->importar();
 
         return redirect()
             ->route('importaciones.index')
-            ->with('success', 'Archivo importado correctamente.');
+            ->with('resultado_importacion', $resultado);
     }
 
     public function destroy(Importacion $importacion)
