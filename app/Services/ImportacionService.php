@@ -147,7 +147,7 @@ class ImportacionService
 
     public function analizar($archivo)
     {
-        // Leer encabezado del archivo
+        // Leer encabezado
         $spreadsheet = IOFactory::load($archivo->getRealPath());
         $sheet = $spreadsheet->getActiveSheet();
 
@@ -156,28 +156,91 @@ class ImportacionService
             'identificacion' => trim((string) $sheet->getCell('B4')->getValue()),
         ];
 
-        // Leer colaboradores
+        // Leer Excel
         $import = new AsignacionesImport();
         Excel::import($import, $archivo);
 
-        $registros = [];
-        $documentos = [];
-
         $erroresArchivo = $this->validarLider($lider);
 
+        $documentos = [];
         $registros = [];
 
-        $documentos = [];
+        /*
+    |--------------------------------------------------------------------------
+    | Fechas disponibles
+    |--------------------------------------------------------------------------
+    */
+
+        $fechas = Fecha::where('activa', true)
+            ->get()
+            ->keyBy('id');
+
+        /*
+    |--------------------------------------------------------------------------
+    | Ocupación actual
+    |--------------------------------------------------------------------------
+    */
+
+        $ocupados = Fecha::withCount([
+            'asignaciones as ocupados' => function ($q) {
+                $q->where('activo', true);
+            }
+        ])
+            ->get()
+            ->pluck('ocupados', 'id')
+            ->toArray();
+
+        /*
+    |--------------------------------------------------------------------------
+    | Validar filas
+    |--------------------------------------------------------------------------
+    */
 
         foreach ($import->datos as $fila) {
 
-            $this->validarFila(
+            $this->validarFila($fila, $documentos);
 
-                $fila,
+            /*
+        |--------------------------------------------------------------------------
+        | Si ya tiene errores no seguimos
+        |--------------------------------------------------------------------------
+        */
 
-                $documentos
+            if (!$fila['importar']) {
 
-            );
+                $registros[] = $fila;
+                continue;
+            }
+
+            $idFecha = $fila['fecha_id'];
+
+            $fecha = $fechas->get($idFecha);
+
+            if (!$fecha) {
+
+                $fila['errores'][] = 'La fecha no existe.';
+                $fila['estado'] = 'ERROR';
+                $fila['importar'] = false;
+
+                $registros[] = $fila;
+                continue;
+            }
+
+            /*
+        |--------------------------------------------------------------------------
+        | Simular cupos
+        |--------------------------------------------------------------------------
+        */
+
+            if ($ocupados[$idFecha] >= $fecha->cupo_maximo) {
+
+                $fila['errores'][] = 'La sesión ya no tiene cupos disponibles.';
+                $fila['estado'] = 'ERROR';
+                $fila['importar'] = false;
+            } else {
+
+                $ocupados[$idFecha]++;
+            }
 
             $registros[] = $fila;
         }
@@ -193,6 +256,7 @@ class ImportacionService
         ];
     }
 
+    
     public function importar()
     {
         $preview = session('preview_importacion');
@@ -201,71 +265,103 @@ class ImportacionService
             throw new \Exception('No existe una importación pendiente.');
         }
 
-
         DB::transaction(function () use ($preview) {
 
-            $nombreLider = preg_replace(
-                '/\s+/',
-                ' ',
-                trim($preview['lider']['nombre'])
-            );
-
             $nombreLider = Str::title(
-                Str::lower($nombreLider)
+                Str::lower(
+                    preg_replace('/\s+/', ' ', trim($preview['lider']['nombre']))
+                )
             );
-            
+
+            $fechas = Fecha::where('activa', true)
+                ->get()
+                ->keyBy(fn($f) => trim($f->descripcion));
+
+            $ocupacion = Fecha::withCount([
+                'asignaciones as ocupados' => function ($q) {
+                    $q->where('activo', true);
+                }
+            ])->get()->keyBy('id');
+
+            $resultados = [];
+
             $importacion = Importacion::create([
-
-                'archivo_original'      => 'Pendiente',
-                'archivo_guardado'      => 'Pendiente',
-
-
-                'lider_nombre'          => $nombreLider,
-                'lider_documento'       => $preview['lider']['identificacion'],
-
-                'cantidad_registros'    => count($preview['registros']),
-                'cantidad_importados'   => collect($preview['registros'])->where('importar', true)->count(),
-                'cantidad_conflictos'   => collect($preview['registros'])->where('importar', false)->count(),
-
-                'estado'                => 'FINALIZADA',
-
-                'observaciones'         => 'Importación realizada desde vista previa.'
-
+                'archivo_original'    => 'Pendiente',
+                'archivo_guardado'    => 'Pendiente',
+                'lider_nombre'        => $nombreLider,
+                'lider_documento'     => $preview['lider']['identificacion'],
+                'cantidad_registros'  => count($preview['registros']),
+                'cantidad_importados' => 0,
+                'cantidad_conflictos' => 0,
+                'estado'              => 'FINALIZADA',
+                'observaciones'       => 'Importación realizada desde vista previa.'
             ]);
 
             foreach ($preview['registros'] as $fila) {
 
                 if (!$fila['importar']) {
+                    $resultados[] = [
+                        'ok' => false,
+                        'documento' => $fila['documento'],
+                        'nombre' => $fila['nombre'],
+                        'motivo' => implode(', ', $fila['errores'] ?? [])
+                    ];
                     continue;
                 }
 
-                $fecha = Fecha::where(
-                    'descripcion',
-                    trim($fila['fecha'])
-                )->first();
+                $fecha = $fechas[trim($fila['fecha'])] ?? null;
 
                 if (!$fecha) {
+                    $resultados[] = [
+                        'ok' => false,
+                        'documento' => $fila['documento'],
+                        'nombre' => $fila['nombre'],
+                        'motivo' => 'La fecha no existe.'
+                    ];
+                    continue;
+                }
+
+
+                if ($ocupacion[$fecha->id]->ocupados >= $fecha->cupo_maximo) {
+
+                    $resultados[] = [
+                        'ok' => false,
+                        'documento' => $fila['documento'],
+                        'nombre' => $fila['nombre'],
+                        'motivo' => 'No hay cupos disponibles para la sesión.'
+                    ];
+
                     continue;
                 }
 
                 Asignacion::create([
-
                     'importacion_id' => $importacion->id,
-
-                    'fecha_id' => $fecha->id,
-
-                    'documento' => $fila['documento'],
-
-                    'nombre' => $fila['nombre'],
-
-                    'fila_excel' => $fila['fila'],
-
-                    'estado' => 'OK',
-
-                    'activo' => true
-
+                    'fecha_id'       => $fecha->id,
+                    'documento'      => $fila['documento'],
+                    'nombre'         => $fila['nombre'],
+                    'fila_excel'     => $fila['fila'],
+                    'estado'         => 'OK',
+                    'activo'         => true
                 ]);
+
+                $ocupacion[$fecha->id]->ocupados++;
+
+                $resultados[] = [
+                    'ok' => true,
+                    'documento' => $fila['documento'],
+                    'nombre' => $fila['nombre'],
+                    'motivo' => null
+                ];
             }
+
+            $importacion->update([
+                'cantidad_importados' => collect($resultados)->where('ok', true)->count(),
+                'cantidad_conflictos' => collect($resultados)->where('ok', false)->count(),
+            ]);
+
+            session([
+                'resultado_importacion' => $resultados
+            ]);
         });
 
         session()->forget('preview_importacion');
