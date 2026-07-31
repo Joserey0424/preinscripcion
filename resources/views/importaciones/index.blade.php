@@ -28,6 +28,13 @@
                                     'errores' => session('resultado_importacion')['errores'],
                                 ])->render() !!}
                             </div>
+
+                            <div id="correo-exitoso" class="d-none">
+                                {!! view('correos.importacion-exitosa', [
+                                    'lider' => session('resultado_importacion')['lider'],
+                                    'cantidad' => collect(session('resultado_importacion')['resultados'])->where('ok', true)->count(),
+                                ])->render() !!}
+                            </div>
                         @endif
 
                         <form action="{{ route('importaciones.preview') }}" method="POST" enctype="multipart/form-data">
@@ -102,6 +109,7 @@
 
             </div>
     `;
+    
 
             if (noImportados > 0) {
 
@@ -139,6 +147,8 @@
 
                 });
 
+            }
+
                 html += `
                     </tbody>
 
@@ -160,7 +170,7 @@
 
             </div>
         `;
-            }
+            
 
             html += `</div>`;
 
@@ -177,7 +187,13 @@
 
         function copiarCorreo() {
 
-            const html = document.getElementById('correo-html').innerHTML;
+            const resultado = @json(session('resultado_importacion'));
+
+            const idCorreo = resultado.errores.length > 0 ?
+                'correo-html' :
+                'correo-exitoso';
+
+            const html = document.getElementById(idCorreo).innerHTML;
 
             const textarea = document.createElement('textarea');
             textarea.value = html;
@@ -188,7 +204,6 @@
             document.body.appendChild(textarea);
 
             textarea.select();
-
             document.execCommand('copy');
 
             document.body.removeChild(textarea);
